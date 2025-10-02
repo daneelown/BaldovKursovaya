@@ -57,6 +57,38 @@ namespace BaldovKursovaya
 			}
 		}
 
+		// При выборе блюда показываем описание в textBoxDescription
+		private void listBoxMenu_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (listBoxMenu.SelectedItem == null)
+			{
+				textBoxDescription.Clear();
+				return;
+			}
+
+			string itemText = listBoxMenu.SelectedItem.ToString();
+			string name = itemText.Split('—')[0].Trim();
+
+			string sql = $"SELECT Description, Price FROM Menu WHERE Position = N'{name}'";
+			DataTable dt = DatabaseHelper.GetData(sql);
+
+			if (dt.Rows.Count > 0)
+			{
+				string description = dt.Rows[0]["Description"].ToString();
+				string price = dt.Rows[0]["Price"].ToString();
+
+				if (string.IsNullOrWhiteSpace(description))
+					description = "Описание пока отсутствует.";
+
+				textBoxDescription.Text = $"{name}\r\n\r\n{description}\r\n\r\nЦена: {price} руб.";
+			}
+			else
+			{
+				textBoxDescription.Text = "Описание не найдено.";
+			}
+		}
+
+
 		// Добавить выбранный товар в корзину
 		private void buttonAddToCart_Click(object sender, EventArgs e)
 		{
@@ -68,7 +100,6 @@ namespace BaldovKursovaya
 
 
 			string itemText = listBoxMenu.SelectedItem.ToString();
-			// Ожидаемый формат: "Название — 120.5 руб."
 			var parts = itemText.Split('—');
 			string name = parts[0].Trim();
 			string pricePart = parts.Length > 1 ? parts[1].Trim() : "0";
