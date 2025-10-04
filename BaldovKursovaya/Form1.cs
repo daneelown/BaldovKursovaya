@@ -7,16 +7,18 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
+
 namespace BaldovKursovaya
 {
 	public partial class Form1 : Form
 	{
-
-
 		private List<CartItem> cart = new List<CartItem>();
+
+		// для управления уведомлением (чтобы перезапускать таймер)
+		private CancellationTokenSource messageCts;
 
 		public Form1()
 		{
@@ -44,12 +46,25 @@ namespace BaldovKursovaya
 		// Загрузка позиций выбранной категории
 		private void listBoxCategories_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (listBoxCategories.SelectedValue is int categoryId)
-			{
-				string sql = $"SELECT Position, Price FROM Menu WHERE CategoryId = {categoryId}";
-				DataTable dt = DatabaseHelper.GetData(sql);
+			// если DataSource у listBoxCategories — DataTable, SelectedValue может быть DBNull/строкой и т.д.
+			if (listBoxCategories.SelectedValue == null) return;
 
-				listBoxMenu.Items.Clear();
+			int categoryId;
+			try
+			{
+				categoryId = Convert.ToInt32(listBoxCategories.SelectedValue);
+			}
+			catch
+			{
+				return;
+			}
+
+			string sql = $"SELECT Position, Price FROM Menu WHERE CategoryId = {categoryId}";
+			DataTable dt = DatabaseHelper.GetData(sql);
+
+			listBoxMenu.Items.Clear();
+			if (dt != null)
+			{
 				foreach (DataRow row in dt.Rows)
 				{
 					listBoxMenu.Items.Add($"{row["Position"]} — {row["Price"]} руб.");
@@ -69,12 +84,12 @@ namespace BaldovKursovaya
 			string itemText = listBoxMenu.SelectedItem.ToString();
 			string name = itemText.Split('—')[0].Trim();
 
-			string sql = $"SELECT Description, Price FROM Menu WHERE Position = N'{name}'";
+			string sql = $"SELECT Description, Price FROM Menu WHERE Position = N'{name.Replace("'", "''")}'";
 			DataTable dt = DatabaseHelper.GetData(sql);
 
-			if (dt.Rows.Count > 0)
+			if (dt != null && dt.Rows.Count > 0)
 			{
-				string description = dt.Rows[0]["Description"].ToString();
+				string description = dt.Rows[0]["Description"] == DBNull.Value ? "" : dt.Rows[0]["Description"].ToString();
 				string price = dt.Rows[0]["Price"].ToString();
 
 				if (string.IsNullOrWhiteSpace(description))
@@ -88,22 +103,20 @@ namespace BaldovKursovaya
 			}
 		}
 
-
 		// Добавить выбранный товар в корзину
 		private void buttonAddToCart_Click(object sender, EventArgs e)
 		{
+			// если ничего не выбрано — показываем уведомление и выходим
 			if (listBoxMenu.SelectedItem == null)
 			{
-				MessageBox.Show("Выберите товар в меню, чтобы добавить в корзину.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				ShowMessage("Выберите товар в меню", Color.Firebrick);
 				return;
 			}
-
 
 			string itemText = listBoxMenu.SelectedItem.ToString();
 			var parts = itemText.Split('—');
 			string name = parts[0].Trim();
 			string pricePart = parts.Length > 1 ? parts[1].Trim() : "0";
-
 
 			// Получим только цифры и разделитель
 			string priceDigits = new string(pricePart.Where(c => char.IsDigit(c) || c == '.' || c == ',').ToArray()).Replace(',', '.');
@@ -111,7 +124,6 @@ namespace BaldovKursovaya
 			{
 				price = 0m;
 			}
-
 
 			// Если такой товар уже в корзине — увеличим количество, иначе добавим новый
 			var existing = cart.FirstOrDefault(x => x.Name == name && x.Price == price);
@@ -124,7 +136,8 @@ namespace BaldovKursovaya
 				cart.Add(new CartItem { Name = name, Price = price, Quantity = 1 });
 			}
 
-			MessageBox.Show("Товар добавлен в корзину", "Ок", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			// ВАЖНО: вместо MessageBox — показываем ненавязчивое уведомление на форме
+			ShowMessage("Товар добавлен в корзину!", Color.DarkGreen);
 		}
 
 		private void buttonCart_Click(object sender, EventArgs e)
@@ -140,6 +153,39 @@ namespace BaldovKursovaya
 			}
 		}
 
+		// Показывает уведомление в labelMessage и скрывает через 3 секунды
+		// Если показать новое сообщение раньше предыдущее отменяется и таймер перезапускается
+		private async void ShowMessage(string text, Color? foreColor = null)
+		{
+			// Отменяем предыдущий таймер
+			try
+			{
+				messageCts?.Cancel();
+			}
+			catch { }
 
+			messageCts = new CancellationTokenSource();
+			var token = messageCts.Token;
+
+			// Настроим внешний вид
+			labelMessage.Text = text;
+			labelMessage.Font = new System.Drawing.Font("Century Gothic", 11F, System.Drawing.FontStyle.Bold);
+			labelMessage.ForeColor = foreColor ?? System.Drawing.Color.DarkGreen;
+			labelMessage.Visible = true;
+
+			try
+			{
+				await Task.Delay(3000, token); // ждём 3 секунды
+			}
+			catch (TaskCanceledException)
+			{
+				// если отменено — просто выйти (новое сообщение, предыдущий таймер прерван)
+				return;
+			}
+
+			// скрываем, если не отменено
+			if (!token.IsCancellationRequested)
+				labelMessage.Visible = false;
+		}
 	}
 }

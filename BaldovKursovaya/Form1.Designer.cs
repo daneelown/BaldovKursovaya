@@ -10,8 +10,9 @@
         private System.Windows.Forms.Button buttonAddToCart;
         private System.Windows.Forms.Button buttonCart;
         private System.Windows.Forms.TextBox textBoxDescription;
+		private System.Windows.Forms.Label labelMessage;
 
-        protected override void Dispose(bool disposing)
+		protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
             {
@@ -77,7 +78,7 @@
             // buttonCart
             this.buttonCart.Location = new System.Drawing.Point(420, 420);
             this.buttonCart.Size = new System.Drawing.Size(140, 30);
-            this.buttonCart.Text = "КОРЗИНА";
+            this.buttonCart.Text = "Корзина";
             this.buttonCart.Click += new System.EventHandler(this.buttonCart_Click);
             this.buttonCart.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
 
@@ -95,6 +96,19 @@
 				| System.Windows.Forms.AnchorStyles.Bottom
 				| System.Windows.Forms.AnchorStyles.Left
 				| System.Windows.Forms.AnchorStyles.Right;
+
+			// labelMessage
+			this.labelMessage = new System.Windows.Forms.Label();
+			this.labelMessage.Font = new System.Drawing.Font("Century Gothic", 9F, System.Drawing.FontStyle.Italic);
+			this.labelMessage.ForeColor = System.Drawing.Color.DarkGreen;
+			this.labelMessage.BackColor = System.Drawing.Color.MistyRose;
+			this.labelMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this.labelMessage.Location = new System.Drawing.Point(20, 450);
+			this.labelMessage.Size = new System.Drawing.Size(400, 20);
+			this.labelMessage.Text = "";
+			this.labelMessage.Visible = false;
+			this.labelMessage.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+			this.Controls.Add(this.labelMessage);
 
 
 			// Form1
