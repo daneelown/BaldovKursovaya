@@ -24,6 +24,18 @@ namespace KonditerskayaApp
 			}
 		}
 
+		public static void ExecuteNonQuery(string query)
+		{
+			using (SqlConnection conn = new SqlConnection(connectionString))
+			{
+				conn.Open();
+				using (SqlCommand cmd = new SqlCommand(query, conn))
+				{
+					cmd.ExecuteNonQuery();
+				}
+			}
+		}
+
 		public static void ExecuteQuery(string query)
 		{
 			using (SqlConnection conn = new SqlConnection(connectionString))

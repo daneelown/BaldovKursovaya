@@ -24,7 +24,6 @@ namespace BaldovKursovaya
 		{
 			InitializeComponent();
 
-			// Разрешаем изменять размер формы
 			this.FormBorderStyle = FormBorderStyle.Sizable;
 			this.MaximizeBox = true;
 			this.MinimizeBox = true;
@@ -32,7 +31,7 @@ namespace BaldovKursovaya
 			this.MinimumSize = new System.Drawing.Size(620, 450);
 		}
 
-		// Загрузка категорий
+		//категории
 		private void buttonMenu_Click(object sender, EventArgs e)
 		{
 			string sql = "SELECT Id, Name FROM Category";
@@ -43,10 +42,10 @@ namespace BaldovKursovaya
 			listBoxCategories.ValueMember = "Id";
 		}
 
-		// Загрузка позиций выбранной категории
+		//позиции категории
 		private void listBoxCategories_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			// если DataSource у listBoxCategories — DataTable, SelectedValue может быть DBNull/строкой и т.д.
+			// Проверка на null и корректность выбранного значения
 			if (listBoxCategories.SelectedValue == null) return;
 
 			int categoryId;
@@ -59,20 +58,28 @@ namespace BaldovKursovaya
 				return;
 			}
 
-			string sql = $"SELECT Position, Price FROM Menu WHERE CategoryId = {categoryId}";
+			// Запрос только доступных позиций
+			string sql = $"SELECT Position, Price FROM Menu WHERE CategoryId = {categoryId} AND Available = 1";
 			DataTable dt = DatabaseHelper.GetData(sql);
 
 			listBoxMenu.Items.Clear();
-			if (dt != null)
+
+			if (dt != null && dt.Rows.Count > 0)
 			{
 				foreach (DataRow row in dt.Rows)
 				{
 					listBoxMenu.Items.Add($"{row["Position"]} — {row["Price"]} руб.");
 				}
+
+				textBoxDescription.Clear();
+			}
+			else
+			{
+				textBoxDescription.Text = "В этой категории сейчас нет доступных позиций.";
 			}
 		}
 
-		// При выборе блюда показываем описание в textBoxDescription
+		//описание блюда
 		private void listBoxMenu_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			if (listBoxMenu.SelectedItem == null)
@@ -103,10 +110,10 @@ namespace BaldovKursovaya
 			}
 		}
 
-		// Добавить выбранный товар в корзину
+		//добавление в корзину выбранногоо
 		private void buttonAddToCart_Click(object sender, EventArgs e)
 		{
-			// если ничего не выбрано — показываем уведомление и выходим
+			//уведомление и выход если не выбранно
 			if (listBoxMenu.SelectedItem == null)
 			{
 				ShowMessage("Выберите товар в меню", Color.Firebrick);
@@ -118,14 +125,13 @@ namespace BaldovKursovaya
 			string name = parts[0].Trim();
 			string pricePart = parts.Length > 1 ? parts[1].Trim() : "0";
 
-			// Получим только цифры и разделитель
 			string priceDigits = new string(pricePart.Where(c => char.IsDigit(c) || c == '.' || c == ',').ToArray()).Replace(',', '.');
 			if (!decimal.TryParse(priceDigits, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal price))
 			{
 				price = 0m;
 			}
 
-			// Если такой товар уже в корзине — увеличим количество, иначе добавим новый
+			//второй раз также позиция в корзине
 			var existing = cart.FirstOrDefault(x => x.Name == name && x.Price == price);
 			if (existing != null)
 			{
@@ -136,7 +142,6 @@ namespace BaldovKursovaya
 				cart.Add(new CartItem { Name = name, Price = price, Quantity = 1 });
 			}
 
-			// ВАЖНО: вместо MessageBox — показываем ненавязчивое уведомление на форме
 			ShowMessage("Товар добавлен в корзину!", Color.DarkGreen);
 		}
 
@@ -145,7 +150,7 @@ namespace BaldovKursovaya
 			using (var cartForm = new CartForm(cart))
 			{
 				var result = cartForm.ShowDialog(this);
-				// Если оплата прошла успешно, CartForm вернёт DialogResult.OK — очистим корзину
+				//прошла успешно, CartForm вернёт DialogResult.OK — очистим корзину
 				if (result == DialogResult.OK)
 				{
 					cart.Clear();

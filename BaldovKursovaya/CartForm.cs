@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using KonditerskayaApp; // чтобы видеть DatabaseHelper
 
 namespace BaldovKursovaya
 {
@@ -17,6 +18,7 @@ namespace BaldovKursovaya
 		private Button btnPay;
 		private Button btnRemove;
 		private Label lblTotal;
+		private Label lblHeader;
 		private BindingList<CartItem> bindingCart;
 		private List<CartItem> sourceCart;
 
@@ -29,14 +31,13 @@ namespace BaldovKursovaya
 
 			InitializeComponent();
 
+			this.BackColor = Color.MistyRose;
+			this.Font = new Font("Century Gothic", 10F, FontStyle.Regular);
 			this.FormBorderStyle = FormBorderStyle.Sizable;
-			this.MaximizeBox = true;
-			this.MinimizeBox = true;
 			this.StartPosition = FormStartPosition.CenterScreen;
 
 			bindingCart.ListChanged += (s, e) => UpdateTotal();
 			dgvCart.DataSource = bindingCart;
-
 			UpdateTotal();
 		}
 
@@ -48,7 +49,6 @@ namespace BaldovKursovaya
 			sourceCart = cart ?? new List<CartItem>();
 			bindingCart = new BindingList<CartItem>(sourceCart);
 			bindingCart.ListChanged += (s, e) => UpdateTotal();
-
 			dgvCart.DataSource = bindingCart;
 			UpdateTotal();
 		}
@@ -61,125 +61,119 @@ namespace BaldovKursovaya
 			this.btnPay = new Button();
 			this.btnRemove = new Button();
 			this.lblTotal = new Label();
+			this.lblHeader = new Label();
 
 			this.SuspendLayout();
 
-			// базовый размер
-			this.ClientSize = new Size(600, 380);
-			this.MinimumSize = new Size(520, 300);
+			//заголовок
+			this.lblHeader.Text = "🧁 Ваша корзина";
+			this.lblHeader.Font = new Font("Century Schoolbook", 15F, FontStyle.Bold);
+			this.lblHeader.ForeColor = Color.MediumVioletRed;
+			this.lblHeader.TextAlign = ContentAlignment.MiddleCenter;
+			this.lblHeader.Dock = DockStyle.Top;
+			this.lblHeader.Height = 45;
+			this.lblHeader.BackColor = Color.FromArgb(255, 240, 245);
 
-			// dgvCart
+			//DataGridView
 			this.dgvCart.Name = "dgvCart";
-			this.dgvCart.TabIndex = 0;
 			this.dgvCart.AutoGenerateColumns = false;
 			this.dgvCart.ReadOnly = true;
-			this.dgvCart.Location = new Point(12, 12);
-			this.dgvCart.Size = new Size(this.ClientSize.Width - 24, this.ClientSize.Height - 100);
+			this.dgvCart.Location = new Point(15, 65);
+			this.dgvCart.Size = new Size(650, 230);
 			this.dgvCart.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-			this.dgvCart.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+			this.dgvCart.BackgroundColor = Color.White;
+			this.dgvCart.GridColor = Color.LightPink;
+			this.dgvCart.BorderStyle = BorderStyle.None;
+			this.dgvCart.RowHeadersVisible = false;
 			this.dgvCart.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-			this.dgvCart.AllowUserToAddRows = false;
-			this.dgvCart.AllowUserToDeleteRows = false;
+			this.dgvCart.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+			this.dgvCart.DefaultCellStyle.Font = new Font("Century Gothic", 10F);
+			this.dgvCart.ColumnHeadersDefaultCellStyle.Font = new Font("Century Gothic", 10F, FontStyle.Bold);
+			this.dgvCart.ColumnHeadersDefaultCellStyle.BackColor = Color.MistyRose;
+			this.dgvCart.EnableHeadersVisualStyles = false;
 
-			// Добавляем колонки
 			this.dgvCart.Columns.Add(new DataGridViewTextBoxColumn
 			{
 				HeaderText = "Название",
 				DataPropertyName = "Name",
-				Name = "colName",
 				FillWeight = 50
 			});
 			this.dgvCart.Columns.Add(new DataGridViewTextBoxColumn
 			{
 				HeaderText = "Цена",
 				DataPropertyName = "Price",
-				Name = "colPrice",
 				FillWeight = 15
 			});
 			this.dgvCart.Columns.Add(new DataGridViewTextBoxColumn
 			{
 				HeaderText = "Кол-во",
 				DataPropertyName = "Quantity",
-				Name = "colQuantity",
 				FillWeight = 15
 			});
 			this.dgvCart.Columns.Add(new DataGridViewTextBoxColumn
 			{
 				HeaderText = "Сумма",
 				DataPropertyName = "Total",
-				Name = "colTotal",
 				FillWeight = 20
 			});
 
-			// lblTotal
-			this.lblTotal.Name = "lblTotal";
-			this.lblTotal.TabIndex = 2;
-			this.lblTotal.Size = new Size(this.ClientSize.Width - 200, 30);
-			this.lblTotal.Location = new Point(12, this.ClientSize.Height - 70);
+			//lblTotal
+			this.lblTotal.Font = new Font("Century Gothic", 11F, FontStyle.Bold);
+			this.lblTotal.ForeColor = Color.Firebrick;
+			this.lblTotal.Location = new Point(15, 305);
+			this.lblTotal.Size = new Size(300, 30);
 			this.lblTotal.Text = "Итого: 0 руб.";
 			this.lblTotal.TextAlign = ContentAlignment.MiddleLeft;
-			this.lblTotal.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			this.lblTotal.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
 
-			// btnRemove
-			this.btnRemove.Name = "btnRemove";
-			this.btnRemove.TabIndex = 3;
-			this.btnRemove.Size = new Size(120, 34);
-			this.btnRemove.Location = new Point(this.ClientSize.Width - 270, this.ClientSize.Height - 72);
-			this.btnRemove.Text = "Удалить позицию";
-			this.btnRemove.UseVisualStyleBackColor = true;
-			this.btnRemove.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+			//btnRemove
+			this.btnRemove.Text = "🗑 Удалить позицию";
+			this.btnRemove.Font = new Font("Century Gothic", 9F, FontStyle.Bold);
+			this.btnRemove.BackColor = Color.LightPink;
+			this.btnRemove.FlatStyle = FlatStyle.Flat;
+			this.btnRemove.FlatAppearance.BorderSize = 0;
+			this.btnRemove.Size = new Size(170, 36);
+			this.btnRemove.Location = new Point(320, 300);
 			this.btnRemove.Click += BtnRemove_Click;
+			this.btnRemove.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
 
 			// btnPay
-			this.btnPay.Name = "btnPay";
-			this.btnPay.TabIndex = 1;
-			this.btnPay.Size = new Size(120, 34);
-			this.btnPay.Location = new Point(this.ClientSize.Width - this.btnPay.Width - 12, this.ClientSize.Height - 72);
-			this.btnPay.Text = "Оплатить";
-			this.btnPay.UseVisualStyleBackColor = true;
-			this.btnPay.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+			this.btnPay.Text = "💖 Оформить заказ";
+			this.btnPay.Font = new Font("Century Gothic", 9F, FontStyle.Bold);
+			this.btnPay.BackColor = Color.LightCoral;
+			this.btnPay.ForeColor = Color.White;
+			this.btnPay.FlatStyle = FlatStyle.Flat;
+			this.btnPay.FlatAppearance.BorderSize = 0;
+			this.btnPay.Size = new Size(170, 36);
+			this.btnPay.Location = new Point(510, 300);
 			this.btnPay.Click += BtnPay_Click;
+			this.btnPay.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
 
-			// Form
+			//Form
+			this.ClientSize = new Size(700, 360);
+			this.Controls.Add(this.lblHeader);
 			this.Controls.Add(this.dgvCart);
 			this.Controls.Add(this.btnPay);
 			this.Controls.Add(this.btnRemove);
 			this.Controls.Add(this.lblTotal);
-			this.Name = "CartForm";
 			this.Text = "Корзина";
 			this.ResumeLayout(false);
 		}
 
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing)
-				components?.Dispose();
-
-			base.Dispose(disposing);
-		}
-
-		private void UpdateTotal()
-		{
-			decimal total = bindingCart?.Sum(x => x?.Total ?? 0m) ?? 0m;
-			lblTotal.Text = $"Итого: {total} руб.";
-		}
-
 		private void BtnRemove_Click(object sender, EventArgs e)
 		{
-			if (dgvCart.CurrentRow == null)
+			if (dgvCart.SelectedRows.Count == 0)
 			{
-				MessageBox.Show("Выберите строку для удаления.", "Удаление", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				MessageBox.Show("Выберите позицию для удаления.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 
-			int index = dgvCart.CurrentRow.Index;
-			if (index < 0 || index >= bindingCart.Count) return;
-
-			var item = bindingCart[index];
+			var item = dgvCart.SelectedRows[0].DataBoundItem as CartItem;
+			if (item == null) return;
 
 			var result = MessageBox.Show(
-				$"Удалить одну позицию «{item.Name}»?",
-				"Подтверждение удаления",
+				$"Удалить {item.Name} (×{item.Quantity}) из корзины?",
+				"Подтверждение",
 				MessageBoxButtons.YesNo,
 				MessageBoxIcon.Question);
 
@@ -191,23 +185,59 @@ namespace BaldovKursovaya
 					bindingCart.Remove(item);
 
 				UpdateTotal();
-				dgvCart.Refresh();
 			}
+		}
+
+		private void UpdateTotal()
+		{
+			decimal total = bindingCart?.Sum(x => x.Total) ?? 0m;
+			lblTotal.Text = $"Итого: {total} руб.";
 		}
 
 		private void BtnPay_Click(object sender, EventArgs e)
 		{
 			if (bindingCart == null || bindingCart.Count == 0)
 			{
-				MessageBox.Show("Корзина пуста.");
+				MessageBox.Show("Корзина пуста 💔", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 
+			decimal total = bindingCart.Sum(x => x.Total);
+
+			//форма для данных клиента
+			using (var orderForm = new OrderInfoForm(total))
+			{
+				if (orderForm.ShowDialog(this) != DialogResult.OK)
+					return;
+
+				try
+				{
+					string name = orderForm.CustomerName.Replace("'", "''");
+					string phone = orderForm.Phone.Replace("'", "''");
+
+					string sql = $@"
+                INSERT INTO Orders (CustomerName, CustomerPhone, OrderDate, Total)
+                VALUES (N'{name}', N'{phone}', GETDATE(), {total})";
+
+					DatabaseHelper.ExecuteNonQuery(sql);
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show("Ошибка при сохранении заказа: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
+			}
+
+			// видео вместо оплаты(шутка)
 			string startupPath = Application.StartupPath;
 			string expected = Path.Combine(startupPath, DefaultVideoFileName);
-			string videoPath = File.Exists(expected) ? expected : null;
+			string videoPath = null;
 
-			if (videoPath == null)
+			if (File.Exists(expected))
+			{
+				videoPath = expected;
+			}
+			else
 			{
 				using (OpenFileDialog ofd = new OpenFileDialog())
 				{
@@ -216,7 +246,9 @@ namespace BaldovKursovaya
 					ofd.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
 
 					if (ofd.ShowDialog(this) == DialogResult.OK)
+					{
 						videoPath = ofd.FileName;
+					}
 					else
 					{
 						MessageBox.Show("Видео не найдено, оплата отменена.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -238,6 +270,14 @@ namespace BaldovKursovaya
 			sourceCart?.Clear();
 			this.DialogResult = DialogResult.OK;
 			this.Close();
+		}
+
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+				components?.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }
