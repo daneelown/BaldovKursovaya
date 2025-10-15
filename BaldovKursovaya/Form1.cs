@@ -158,11 +158,11 @@ namespace BaldovKursovaya
 			}
 		}
 
-		// Показывает уведомление в labelMessage и скрывает через 3 секунды
-		// Если показать новое сообщение раньше предыдущее отменяется и таймер перезапускается
+		//уведомление в labelMessage и скрывает через 3 секунды
+		//новое сообщение раньше предыдущее отменяется и таймер перезапускается
 		private async void ShowMessage(string text, Color? foreColor = null)
 		{
-			// Отменяем предыдущий таймер
+			//отменяем предыдущий таймер
 			try
 			{
 				messageCts?.Cancel();
@@ -172,7 +172,7 @@ namespace BaldovKursovaya
 			messageCts = new CancellationTokenSource();
 			var token = messageCts.Token;
 
-			// Настроим внешний вид
+			// внешний вид
 			labelMessage.Text = text;
 			labelMessage.Font = new System.Drawing.Font("Century Gothic", 11F, System.Drawing.FontStyle.Bold);
 			labelMessage.ForeColor = foreColor ?? System.Drawing.Color.DarkGreen;

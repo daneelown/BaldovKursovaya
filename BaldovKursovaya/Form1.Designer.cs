@@ -89,8 +89,8 @@
 			this.textBoxDescription.Multiline = true;
 			this.textBoxDescription.ReadOnly = true;
 			this.textBoxDescription.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-			this.textBoxDescription.BackColor = System.Drawing.Color.MistyRose; // фон как у формы
-			this.textBoxDescription.BorderStyle = System.Windows.Forms.BorderStyle.None; // убрали рамку
+			this.textBoxDescription.BackColor = System.Drawing.Color.MistyRose; 
+			this.textBoxDescription.BorderStyle = System.Windows.Forms.BorderStyle.None; 
 			this.textBoxDescription.Anchor =
 				System.Windows.Forms.AnchorStyles.Top
 				| System.Windows.Forms.AnchorStyles.Bottom

@@ -6,7 +6,8 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using KonditerskayaApp; // чтобы видеть DatabaseHelper
+using KonditerskayaApp;
+using Newtonsoft.Json; 
 
 namespace BaldovKursovaya
 {
@@ -137,7 +138,7 @@ namespace BaldovKursovaya
 			this.btnRemove.Click += BtnRemove_Click;
 			this.btnRemove.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
 
-			// btnPay
+			//btnPay
 			this.btnPay.Text = "💖 Оформить заказ";
 			this.btnPay.Font = new Font("Century Gothic", 9F, FontStyle.Bold);
 			this.btnPay.BackColor = Color.LightCoral;
@@ -204,7 +205,7 @@ namespace BaldovKursovaya
 
 			decimal total = bindingCart.Sum(x => x.Total);
 
-			//форма для данных клиента
+			// Форма данных заказчика
 			using (var orderForm = new OrderInfoForm(total))
 			{
 				if (orderForm.ShowDialog(this) != DialogResult.OK)
@@ -212,14 +213,30 @@ namespace BaldovKursovaya
 
 				try
 				{
-					string name = orderForm.CustomerName.Replace("'", "''");
-					string phone = orderForm.Phone.Replace("'", "''");
+					// сериализуем состав заказа в JSON
+					var orderItems = bindingCart.Select(ci => new
+					{
+						Name = ci.Name,
+						Price = ci.Price,
+						Quantity = ci.Quantity,
+						Total = ci.Total
+					}).ToList();
 
-					string sql = $@"
-                INSERT INTO Orders (CustomerName, CustomerPhone, OrderDate, Total)
-                VALUES (N'{name}', N'{phone}', GETDATE(), {total})";
+					string orderJson = JsonConvert.SerializeObject(orderItems, Formatting.None);
 
-					DatabaseHelper.ExecuteNonQuery(sql);
+					string sql = @"
+						INSERT INTO Orders (CustomerName, CustomerPhone, OrderDate, Total, OrderItems)
+						VALUES (@name, @phone, GETDATE(), @total, @json)";
+
+					var parameters = new Dictionary<string, object>
+					{
+						{"@name", orderForm.CustomerName},
+						{"@phone", orderForm.Phone},
+						{"@total", total},
+						{"@json", orderJson}
+					};
+
+					DatabaseHelper.ExecuteNonQuery(sql, parameters);
 				}
 				catch (Exception ex)
 				{
@@ -228,7 +245,7 @@ namespace BaldovKursovaya
 				}
 			}
 
-			// видео вместо оплаты(шутка)
+			// Видео "оплата"
 			string startupPath = Application.StartupPath;
 			string expected = Path.Combine(startupPath, DefaultVideoFileName);
 			string videoPath = null;
@@ -271,7 +288,6 @@ namespace BaldovKursovaya
 			this.DialogResult = DialogResult.OK;
 			this.Close();
 		}
-
 
 		protected override void Dispose(bool disposing)
 		{
